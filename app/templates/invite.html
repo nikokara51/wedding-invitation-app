@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>You're Invited</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Dancing+Script&display=swap" rel="stylesheet">
+    <style>
+      .script { font-family: 'Dancing Script', cursive; }
+      .serif { font-family: 'Playfair Display', serif; }
+      .glass { background: rgba(255,255,255,0.75); backdrop-filter: blur(6px); }
+    </style>
+  </head>
+  <body class="min-h-screen bg-cover bg-center flex items-center justify-center" style="background-image: url('/static/bg_flower.jpg')">
+    <div class="max-w-3xl w-full p-8 rounded-3xl shadow-2xl glass">
+      {% if show_home %}
+      <div class="text-center">
+        <h1 class="text-5xl script text-pink-600">We Are Getting Married</h1>
+        <p class="mt-4 serif">Click your personalized invite link or press a demo below</p>
+        <div class="mt-6 flex justify-center gap-4">
+          <a href="/invite/demo" class="px-6 py-2 rounded-full bg-pink-500 text-white">View Demo Invite</a>
+        </div>
+      </div>
+      {% else %}
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h2 class="text-4xl script text-rose-600">Dear {{ guest.name }},</h2>
+          <p class="mt-4 serif text-lg">We would be honored to have you join us on our special day.</p>
+          <div class="mt-6">
+            <p class="font-semibold">💒 Ceremony</p>
+            <p class="text-gray-700">{{ guest.church_name }}</p>
+            <p class="mt-4 font-semibold">🎉 Reception</p>
+            <p class="text-gray-700">{{ guest.reception_name }}</p>
+          </div>
+          <div class="mt-6">
+            <form action="/rsvp/{{ guest.slug }}" method="post" class="flex gap-3">
+              <input type="hidden" name="name" value="{{ guest.name }}" />
+              <button name="attending" value="yes" class="px-4 py-2 bg-green-500 text-white rounded-full">Yes, I'll be there</button>
+              <button name="attending" value="no" class="px-4 py-2 bg-gray-200 rounded-full">Sorry, can't make it</button>
+            </form>
+          </div>
+          {% if request.query_params.rsvp == 'thanks' %}
+            <p class="mt-4 text-green-600">Thank you — your RSVP has been recorded.</p>
+          {% endif %}
+        </div>
+        <div>
+          <div id="map" class="h-64 rounded-xl overflow-hidden"></div>
+          <div id="map2" class="h-64 rounded-xl overflow-hidden mt-4"></div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    <script>
+    // Google Maps init
+    function initMap() {
+      const key = '{{ google_api_key or "" }}';
+    }
+    </script>
+    {% if guest and google_api_key %}
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ google_api_key }}&callback=initMap" async defer></script>
+    <script>
+      function initMap(){
+        const church = { lat: {{ guest.church_lat or 0 }}, lng: {{ guest.church_lng or 0 }} };
+        const reception = { lat: {{ guest.reception_lat or 0 }}, lng: {{ guest.reception_lng or 0 }} };
+        const map = new google.maps.Map(document.getElementById('map'), { zoom: 14, center: church });
+        const map2 = new google.maps.Map(document.getElementById('map2'), { zoom: 14, center: reception });
+        new google.maps.Marker({ position: church, map: map, title: 'Ceremony' });
+        new google.maps.Marker({ position: reception, map: map2, title: 'Reception' });
+      }
+    </script>
+    {% else %}
+    <script>
+      function embedMap(el, place){
+        el.innerHTML = `<iframe width="100%" height="100%" style="border:0" loading="lazy" allowfullscreen src="https://www.google.com/maps?q=${encodeURIComponent(place)}&output=embed"></iframe>`;
+      }
+      const g = {{ guest|tojson }};
+      if(g){
+        embedMap(document.getElementById('map'), g.church_name || '');
+        embedMap(document.getElementById('map2'), g.reception_name || '');
+      }
+    </script>
+    {% endif %}
+  </body>
+</html>

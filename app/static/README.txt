@@ -1,0 +1,1 @@
+Add your background images and assets here (e.g., bg_flower.jpg).
