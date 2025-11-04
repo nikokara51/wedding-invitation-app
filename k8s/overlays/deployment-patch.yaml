@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wedding-invite
+spec:
+  template:
+    spec:
+      # Patch main container
+      containers:
+        - name: wedding-invite
+          image: nikokara/wedding-invite-app:1.0
+      # Patch init container
+      initContainers:
+        - name: copy-db
+          image: nikokara/wedding-invite-app:1.0

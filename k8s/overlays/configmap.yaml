@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wedding-invite-config
+data:
+  BASE_URL: "http://<minikube-ip>/invite/"
+  DATABASE_URL: "sqlite+aiosqlite:///app/invites.db"

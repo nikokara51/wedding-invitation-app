@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wedding-invite
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wedding-invite
+  template:
+    metadata:
+      labels:
+        app: wedding-invite
+    spec:
+      initContainers:
+        - name: copy-db
+          image: <your-dockerhub-username>/wedding-invite-app:latest
+          command: ["sh", "-c"]
+          args:
+            - |
+              echo "DB already exists in PVC, skipping copy."
+          volumeMounts:
+            - name: db-volume
+              mountPath: /app/app/data
+      containers:
+        - name: wedding-invite
+          image: <your-dockerhub-username>/wedding-invite-app:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: wedding-invite-config
+                  key: BASE_URL
+            - name: DATABASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: wedding-invite-config
+                  key: DATABASE_URL
+          volumeMounts:
+            - name: db-volume
+              mountPath: /app/app/data
+      volumes:
+        - name: db-volume
+          persistentVolumeClaim:
+            claimName: db-pvc

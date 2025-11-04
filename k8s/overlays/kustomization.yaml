@@ -1,0 +1,11 @@
+resources:
+  - ../base
+
+patchesStrategicMerge:
+  - deployment-patch.yaml
+
+# configMapGenerator:
+#   - name: wedding-invite-config
+#     behavior: merge
+#     files:
+#       - configmap.yaml
